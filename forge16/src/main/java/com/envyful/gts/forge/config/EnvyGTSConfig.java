@@ -2,6 +2,7 @@ package com.envyful.gts.forge.config;
 
 import com.envyful.api.config.data.ConfigPath;
 import com.envyful.api.config.type.ConfigItem;
+import com.envyful.api.config.type.RedisDatabaseDetails;
 import com.envyful.api.config.type.SQLDatabaseDetails;
 import com.envyful.api.config.yaml.AbstractYamlConfig;
 import com.envyful.api.gui.item.Displayable;
@@ -31,6 +32,8 @@ public class EnvyGTSConfig extends AbstractYamlConfig {
     private SQLDatabaseDetails databaseDetails = new SQLDatabaseDetails("EnvyGTS", "0.0.0.0", 3306, "admin",
                                                                         "password", "database"
     );
+
+    private RedisDatabaseDetails redisDatabaseDetails = new RedisDatabaseDetails("0.0.0.0", 6379, "password");
 
     private Map<String, String> itemUrlFormats = ImmutableMap.of(
             "minecraft", "https://minecraft.fandom.com/wiki/Special:FilePath/%item_id%.png"
@@ -86,6 +89,10 @@ public class EnvyGTSConfig extends AbstractYamlConfig {
 
     public SQLDatabaseDetails getDatabaseDetails() {
         return this.databaseDetails;
+    }
+
+    public RedisDatabaseDetails getRedisDatabaseDetails() {
+        return this.redisDatabaseDetails;
     }
 
     public long getMinTradeDuration() {

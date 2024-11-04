@@ -5,12 +5,14 @@ import com.envyful.api.concurrency.UtilLogger;
 import com.envyful.api.config.yaml.YamlConfigFactory;
 import com.envyful.api.database.Database;
 import com.envyful.api.database.impl.SimpleHikariDatabase;
+import com.envyful.api.database.impl.SimpleLettuceDatabase;
 import com.envyful.api.database.sql.UtilSql;
 import com.envyful.api.forge.command.ForgeCommandFactory;
 import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
 import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
 import com.envyful.api.forge.platform.ForgePlatformHandler;
 import com.envyful.api.forge.player.ForgePlayerManager;
+import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.platform.PlatformProxy;
 import com.envyful.gts.api.GlobalTradeManager;
@@ -57,6 +59,7 @@ public class EnvyGTSForge {
     private GuiConfig gui;
 
     private Database database;
+    private Database redisDatabase;
     private GlobalTradeManager tradeManager;
 
     public EnvyGTSForge() {
@@ -83,6 +86,7 @@ public class EnvyGTSForge {
         this.loadConfig();
 
         this.database = new SimpleHikariDatabase(this.config.getDatabaseDetails());
+        this.redisDatabase = new SimpleLettuceDatabase(this.config.getRedisDatabaseDetails());
         this.createTables();
     }
 
@@ -92,11 +96,11 @@ public class EnvyGTSForge {
         new DiscordTradeCreateListener();
         new DiscordTradePurchaseListener();
         new DiscordTradeRemoveListener();
-
         UtilConcurrency.runAsync(() -> {
             this.tradeManager = new SQLGlobalTradeManager();
             TradeManager.setPlatformTradeManager(this.tradeManager);
         });
+
     }
 
     public void loadConfig() {
@@ -140,6 +144,10 @@ public class EnvyGTSForge {
 
     public static Database getDatabase() {
         return instance.database;
+    }
+
+    public static Database getRedisDatabase() {
+        return instance.redisDatabase;
     }
 
     public static ForgePlayerManager getPlayerManager() {

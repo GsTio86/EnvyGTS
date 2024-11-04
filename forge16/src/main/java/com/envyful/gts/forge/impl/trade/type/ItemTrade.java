@@ -19,6 +19,7 @@ import com.envyful.gts.api.TradeData;
 import com.envyful.gts.api.discord.DiscordEvent;
 import com.envyful.gts.api.gui.SortType;
 import com.envyful.gts.api.sql.EnvyGTSQueries;
+import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.config.EnvyGTSConfig;
 import com.envyful.gts.forge.event.TradeCollectEvent;
@@ -51,10 +52,10 @@ public class ItemTrade extends ForgeTrade {
     private final ItemStack item;
     private final TradeData tradeData;
 
-    public ItemTrade(UUID owner, String ownerName, String originalOwnerName, double cost, long expiry, ItemStack item,
+    public ItemTrade(String tradeId, UUID owner, String ownerName, String originalOwnerName, double cost, long expiry, ItemStack item,
                      boolean removed,
                      boolean purchased) {
-        super(owner, ownerName, cost, expiry, originalOwnerName, removed, purchased);
+        super(tradeId, owner, ownerName, cost, expiry, originalOwnerName, removed, purchased);
 
         this.item = item;
         this.tradeData = new TradeData(owner, this.item.copy().getDisplayName().getString(), this.expiry);
@@ -232,13 +233,9 @@ public class ItemTrade extends ForgeTrade {
     public void delete() {
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.REMOVE_TRADE)) {
-            preparedStatement.setString(1, this.owner.toString());
-            preparedStatement.setLong(2, this.expiry);
-            preparedStatement.setDouble(3, this.cost);
-            preparedStatement.setString(4, "i");
-            preparedStatement.setString(5, "INSTANT_BUY");
-
+            preparedStatement.setString(1, this.tradeId.toString());
             preparedStatement.executeUpdate();
+            notifyTradeStatus("REMOVED");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -421,8 +418,7 @@ public class ItemTrade extends ForgeTrade {
             if (this.itemStack == null) {
                 return null;
             }
-
-            return new ItemTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+            return new ItemTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                                  this.itemStack,
                                  this.removed,
                                  this.purchased

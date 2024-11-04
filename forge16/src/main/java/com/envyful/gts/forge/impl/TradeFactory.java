@@ -11,6 +11,7 @@ public class TradeFactory {
 
     public static Trade fromResultSet(ResultSet resultSet) throws SQLException {
         return ForgeTrade.builder()
+                .tradeId(resultSet.getString("tradeId"))
                 .cost(resultSet.getDouble("cost"))
                 .expiry(resultSet.getLong("expiry"))
                 .owner(UUID.fromString(resultSet.getString("owner")))

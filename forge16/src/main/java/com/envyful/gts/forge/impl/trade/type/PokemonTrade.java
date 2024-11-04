@@ -66,10 +66,10 @@ public class PokemonTrade extends ForgeTrade {
     private final Pokemon pokemon;
     private final TradeData tradeData;
 
-    public PokemonTrade(UUID owner, String ownerName, String originalOwnerName, double cost, long expiry,
+    public PokemonTrade(String tradeId, UUID owner, String ownerName, String originalOwnerName, double cost, long expiry,
                         Pokemon pokemon, boolean removed,
                         boolean purchased) {
-        super(owner, ownerName, cost, expiry, originalOwnerName, removed, purchased);
+        super(tradeId, owner, ownerName, cost, expiry, originalOwnerName, removed, purchased);
 
         this.pokemon = pokemon;
         this.tradeData = new PixelmonTradeData(owner, this.pokemon.getDisplayName(), expiry,
@@ -469,8 +469,7 @@ public class PokemonTrade extends ForgeTrade {
             if (this.pokemon == null) {
                 return null;
             }
-
-            return new PokemonTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+            return new PokemonTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                                     this.pokemon,
                                     this.removed,
                                     this.purchased);

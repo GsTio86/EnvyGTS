@@ -18,17 +18,18 @@ repositories {}
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20.2-48.1.0'
 
-    implementation 'pixelmon:Pixelmon-1.20.2-9.2.8-server:9.2.8'
+    implementation 'pixelmon:Pixelmon-1.20.2-9.2.9-server:9.2.9'
+    implementation 'io.lettuce:lettuce-core:6.2.2.RELEASE'
 
     compileOnly "com.envyful.papi:api:2.0.5"
 
     shadow group: 'org.spongepowered', name: 'configurate-yaml', version: '4.2.0-COMMENTS'
 
-    shadow group: 'com.envyful.api', name: 'commons', version: '6.5.1'
-    shadow (group: 'com.envyful.api', name: 'forge20', version: '6.5.1') {
+    shadow group: 'com.envyful.api', name: 'commons', version: '6.8.9'
+    shadow (group: 'com.envyful.api', name: 'forge20', version: '6.8.9') {
         transitive = false;
     }
-    shadow (group: 'com.envyful.api', name: 'reforged20', version: '6.5.1') {
+    shadow (group: 'com.envyful.api', name: 'reforged20', version: '6.8.9') {
         transitive = false;
     }
 
@@ -55,6 +56,7 @@ shadowJar {
     relocate('org.reactivestreams', 'com.envyful.gts.forge.shade.reactivestreams')
     relocate('reactor', 'com.envyful.gts.forge.shade.reactor')
     relocate('com.mysql', 'com.envyful.gts.forge.shade.mysql')
+    relocate('uk.co.envyware', 'com.envyful.gts.forge.shade.envyware')
 
     exclude 'org/apache/logging/**'
     exclude "com/google/**"

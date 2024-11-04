@@ -22,6 +22,14 @@ public interface Trade extends SimplePlaceholder {
 
     /**
      *
+     * Gets the unique id of the trade
+     *
+     * @return The unique id
+     */
+    String getTradeId();
+
+    /**
+     *
      * Gets the Trade's display name
      *
      * @return The display name

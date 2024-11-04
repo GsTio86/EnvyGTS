@@ -9,12 +9,13 @@ import com.envyful.gts.forge.player.GTSAttribute;
 import com.google.common.collect.Lists;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class ForgeGlobalTradeManager implements GlobalTradeManager {
 
-    protected final List<Trade> activeTrades = Lists.newArrayList();
+    protected final List<Trade> activeTrades = Collections.synchronizedList(new ArrayList<>());
 
     public ForgeGlobalTradeManager() {}
 

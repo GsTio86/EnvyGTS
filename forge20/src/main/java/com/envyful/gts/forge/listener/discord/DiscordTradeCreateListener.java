@@ -21,8 +21,6 @@ public class DiscordTradeCreateListener extends LazyListener {
     public void onTradeCreate(TradeCreateEvent event) {
         DiscordEvent publishHandler = DiscordEventManager.getPublishHandler();
 
-        EnvyGTSForge.getLogger().info("DiscordTradeCreateListener: " + publishHandler);
-        EnvyGTSForge.getLogger().info("DiscordTradeCreateListener: " + publishHandler.isEnabled());
         if (publishHandler == null || !publishHandler.isEnabled()) {
             return;
         }

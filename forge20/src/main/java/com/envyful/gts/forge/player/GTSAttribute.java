@@ -95,7 +95,7 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
     @Override
     public void load() {
         for (Trade allTrade : EnvyGTSForge.getTradeManager().getAllTrades()) {
-            if (allTrade.isOwner(this.parent.getUniqueId())) {
+            if (allTrade.isOwner(this.id)) {
                 this.ownedTrades.add(allTrade);
             }
         }

@@ -5,6 +5,7 @@ import com.envyful.api.concurrency.UtilLogger;
 import com.envyful.api.config.yaml.YamlConfigFactory;
 import com.envyful.api.database.Database;
 import com.envyful.api.database.impl.SimpleHikariDatabase;
+import com.envyful.api.database.impl.SimpleLettuceDatabase;
 import com.envyful.api.database.sql.UtilSql;
 import com.envyful.api.forge.command.ForgeCommandFactory;
 import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
@@ -57,6 +58,7 @@ public class EnvyGTSForge {
     private GuiConfig gui;
 
     private Database database;
+    private Database redisDatabase;
     private GlobalTradeManager tradeManager;
 
     public EnvyGTSForge() {
@@ -82,6 +84,7 @@ public class EnvyGTSForge {
         this.loadConfig();
 
         this.database = new SimpleHikariDatabase(this.config.getDatabaseDetails());
+        this.redisDatabase = new SimpleLettuceDatabase(this.config.getRedisDatabaseDetails());
         this.createTables();
     }
 
@@ -93,7 +96,7 @@ public class EnvyGTSForge {
         new DiscordTradeRemoveListener();
 
         UtilConcurrency.runAsync(() -> {
-            this.tradeManager = new SQLGlobalTradeManager(this);
+            this.tradeManager = new SQLGlobalTradeManager();
             TradeManager.setPlatformTradeManager(this.tradeManager);
         });
     }
@@ -139,6 +142,10 @@ public class EnvyGTSForge {
 
     public static Database getDatabase() {
         return instance.database;
+    }
+
+    public static Database getRedisDatabase() {
+        return instance.redisDatabase;
     }
 
     public static ForgePlayerManager getPlayerManager() {

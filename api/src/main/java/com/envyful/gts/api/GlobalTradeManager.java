@@ -13,6 +13,14 @@ public interface GlobalTradeManager {
 
     /**
      *
+     * Represents a trade being synced from redis channel
+     *
+     * @param message The message to sync
+     */
+    void syncTrade(String channel, String message);
+
+    /**
+     *
      * Represents a player adding a trade to the GTS
      *
      * @param player The player adding the trade

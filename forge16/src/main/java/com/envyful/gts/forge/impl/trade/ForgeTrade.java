@@ -1,6 +1,7 @@
 package com.envyful.gts.forge.impl.trade;
 
 import com.envyful.api.concurrency.UtilConcurrency;
+import com.envyful.api.database.Database;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.player.util.UtilPlayer;
@@ -8,6 +9,7 @@ import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.Trade;
 import com.envyful.gts.api.gui.FilterType;
 import com.envyful.gts.api.sql.EnvyGTSQueries;
+import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.config.EnvyGTSConfig;
 import com.envyful.gts.forge.event.PostTradePurchaseEvent;
@@ -17,6 +19,7 @@ import com.envyful.gts.forge.impl.trade.type.PokemonTrade;
 import com.envyful.gts.forge.player.GTSAttribute;
 import com.pixelmonmod.pixelmon.api.economy.BankAccount;
 import com.pixelmonmod.pixelmon.api.economy.BankAccountProxy;
+import io.lettuce.core.SetArgs;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Util;
 import net.minecraftforge.common.MinecraftForge;
@@ -36,6 +39,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class ForgeTrade implements Trade {
 
+    private static final String TRADE_LOCK_KEY_PREFIX = "trade_lock:";
+    private static final int LOCK_EXPIRY_TIME_MS = 10000;
+
+    private final String lockValue = UUID.randomUUID().toString();
+    protected final String tradeId;
     protected final double cost;
     protected final long expiry;
     protected final String originalOwnerName;
@@ -45,7 +53,8 @@ public abstract class ForgeTrade implements Trade {
     protected boolean removed;
     protected boolean purchased;
 
-    protected ForgeTrade(UUID owner, String ownerName, double cost, long expiry, String originalOwnerName, boolean removed, boolean purchased) {
+    protected ForgeTrade(String tradeId, UUID owner, String ownerName, double cost, long expiry, String originalOwnerName, boolean removed, boolean purchased) {
+        this.tradeId = tradeId;
         this.owner = owner;
         this.ownerName = ownerName;
         this.cost = cost;
@@ -53,6 +62,11 @@ public abstract class ForgeTrade implements Trade {
         this.originalOwnerName = originalOwnerName;
         this.removed = removed;
         this.purchased = purchased;
+    }
+
+    @Override
+    public String getTradeId() {
+        return this.tradeId;
     }
 
     @Override
@@ -91,47 +105,89 @@ public abstract class ForgeTrade implements Trade {
             return false;
         }
 
-        var parent = (ServerPlayerEntity) player.getParent();
-        var bankAccount = BankAccountProxy.getBankAccountUnsafe(parent);
-
-        if (bankAccount.getBalance().doubleValue() < this.cost) {
-            player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getInsufficientFunds()));
+        if (!attemptLock()) {
+            player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getTradeAlreadyPurchased()));
             return false;
         }
 
-        if (MinecraftForge.EVENT_BUS.post(new TradePurchaseEvent((ForgeEnvyPlayer)player, this))) {
-            return false;
-        }
+        try {
+            var parent = (ServerPlayerEntity) player.getParent();
+            var bankAccount = BankAccountProxy.getBankAccountUnsafe(parent);
 
-        bankAccount.take(this.cost);
+            if (bankAccount.getBalance().doubleValue() < this.cost) {
+                player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getInsufficientFunds()));
+                return false;
+            }
 
-        EnvyGTSConfig config = EnvyGTSForge.getConfig();
-        BankAccount target = BankAccountProxy.getBankAccountUnsafe(this.owner);
+            if (MinecraftForge.EVENT_BUS.post(new TradePurchaseEvent((ForgeEnvyPlayer)player, this))) {
+                return false;
+            }
 
-        if (target == null) {
-            return false;
-        }
+            bankAccount.take(this.cost);
 
-        target.add((this.cost * (config.isEnableTax() ? config.getTaxRate() : 1.0)));
+            EnvyGTSConfig config = EnvyGTSForge.getConfig();
+            BankAccount target = BankAccountProxy.getBankAccountUnsafe(this.owner);
 
-        this.attemptSendMessage(this.owner, player.getName(), (this.cost * (1 - (config.isEnableTax() ?
+            if (target == null) {
+                return false;
+            }
+
+            target.add((this.cost * (config.isEnableTax() ? config.getTaxRate() : 1.0)));
+
+            this.attemptSendMessage(this.owner, player.getName(), (this.cost * (1 - (config.isEnableTax() ?
                 config.getTaxRate() : 1.0))));
 
-        this.purchased = true;
-        this.setRemoved().whenCompleteAsync((unused, throwable) -> {
-            this.collect(player, null).thenApply(unused1 -> {
-                this.updateOwnership((EnvyPlayer<ServerPlayerEntity>) player, this.owner);
+            this.purchased = true;
+            this.setRemoved().whenCompleteAsync((unused, throwable) -> {
+                this.collect(player, null).thenApply(unused1 -> {
+                    this.updateOwnership((EnvyPlayer<ServerPlayerEntity>) player, this.owner);
 
-                MinecraftForge.EVENT_BUS.post(new PostTradePurchaseEvent((ForgeEnvyPlayer) player, this));
+                    MinecraftForge.EVENT_BUS.post(new PostTradePurchaseEvent((ForgeEnvyPlayer) player, this));
 
-                player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getPurchasedTrade()));
-                return null;
-            });
-        }, ServerLifecycleHooks.getCurrentServer());
-        return true;
+                    player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getPurchasedTrade()));
+                    notifyTradeStatus("PURCHASED");
+                    return null;
+                });
+            }, ServerLifecycleHooks.getCurrentServer());
+            return true;
+        } finally {
+            releaseLock();
+        }
+    }
+
+    private boolean attemptLock() {
+        Database redis = EnvyGTSForge.getRedisDatabase();
+        String lockKey = TRADE_LOCK_KEY_PREFIX + this.tradeId;
+
+        try {
+            String result = redis.getRedis().sync().set(lockKey, lockValue, SetArgs.Builder.nx().px(LOCK_EXPIRY_TIME_MS));
+            return "OK".equals(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void releaseLock() {
+        Database redis = EnvyGTSForge.getRedisDatabase();
+        String lockKey = TRADE_LOCK_KEY_PREFIX + this.tradeId;
+
+        try {
+            if (lockValue.equals(redis.getRedis().sync().get(lockKey))) {
+                redis.getRedis().sync().del(lockKey);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void attemptSendMessage(UUID owner, String buyerName, double taxTaken) {
+        notifyTradeStatus("WAS_PURCHASED",
+            owner.toString(), // 2
+            buyerName, // 3
+             this.getDisplayName(), // 4
+            String.format("%.2f", taxTaken), // 5
+            String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.getCost())); // 6
         ServerPlayerEntity target = UtilPlayer.getOnlinePlayer(owner);
 
         if (target == null) {
@@ -169,17 +225,8 @@ public abstract class ForgeTrade implements Trade {
                  PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_REMOVED)) {
                 preparedStatement.setInt(1, 1);
                 preparedStatement.setInt(2, this.purchased ? 1 : 0);
-                preparedStatement.setString(3, this.owner.toString());
-                preparedStatement.setLong(4, this.expiry);
-                preparedStatement.setDouble(5, this.cost);
+                preparedStatement.setString(3, this.tradeId);
 
-                if (this instanceof ItemTrade) {
-                    preparedStatement.setString(6, "i");
-                } else {
-                    preparedStatement.setString(6, "p");
-                }
-
-                preparedStatement.setString(7, "INSTANT_BUY");
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -197,22 +244,21 @@ public abstract class ForgeTrade implements Trade {
                  PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_OWNER)) {
                 preparedStatement.setString(1, newOwner.toString());
                 preparedStatement.setString(2, newOwnerName);
-                preparedStatement.setString(3, owner.toString());
-                preparedStatement.setLong(4, this.expiry);
-                preparedStatement.setDouble(5, this.cost);
+                preparedStatement.setString(3, tradeId);
 
-                if (this instanceof ItemTrade) {
-                    preparedStatement.setString(6, "i");
-                } else {
-                    preparedStatement.setString(6, "p");
-                }
-
-                preparedStatement.setString(7, "INSTANT_BUY");
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void notifyTradeStatus(String status, String... args) {
+        String notificationMessage = String.format("%s:%s:%s", TradeIDUtils.SERVER_IDENTIFIER, this.tradeId, status);
+        if (args != null && args.length > 0) {
+            notificationMessage += ":" + String.join(":", args);
+        }
+        EnvyGTSForge.getRedisDatabase().publish("trade_update_channel", notificationMessage);
     }
 
     public static Builder builder() {
@@ -221,6 +267,7 @@ public abstract class ForgeTrade implements Trade {
 
     public static class Builder {
 
+        protected String tradeId = UUID.randomUUID().toString();
         protected UUID owner = null;
         protected String ownerName = "";
         protected String originalOwnerName = "";
@@ -230,6 +277,11 @@ public abstract class ForgeTrade implements Trade {
         protected boolean purchased = false;
 
         protected Builder() {}
+
+        public Builder tradeId(String tradeId) {
+            this.tradeId = tradeId;
+            return this;
+        }
 
         public Builder owner(EnvyPlayer<?> player) {
             this.ownerName(player.getName());
@@ -282,6 +334,10 @@ public abstract class ForgeTrade implements Trade {
                 default:
                     builder = new ItemTrade.Builder();
                     break;
+            }
+
+            if (this.tradeId != null) {
+                builder.tradeId(this.tradeId);
             }
 
             if (this.owner != null) {
