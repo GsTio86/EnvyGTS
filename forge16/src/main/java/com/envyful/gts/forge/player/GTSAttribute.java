@@ -2,7 +2,6 @@ package com.envyful.gts.forge.player;
 
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.concurrency.UtilForgeConcurrency;
-import com.envyful.api.forge.player.ForgePlayerManager;
 import com.envyful.api.forge.player.attribute.ManagedForgeAttribute;
 import com.envyful.api.json.UtilGson;
 import com.envyful.gts.api.Trade;
@@ -73,14 +72,14 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
     @Override
     public void load() {
         for (Trade allTrade : EnvyGTSForge.getTradeManager().getAllTrades()) {
-            if (allTrade.isOwner(this.parent.getUniqueId())) {
+            if (allTrade.isOwner(this.id)) {
                 this.ownedTrades.add(allTrade);
             }
         }
 
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement settingsStatement = connection.prepareStatement(EnvyGTSQueries.GET_PLAYER_SETTINGS)) {
-            settingsStatement.setString(1, this.parent.getUniqueId().toString());
+            settingsStatement.setString(1, this.id.toString());
 
             ResultSet settingsSet = settingsStatement.executeQuery();
 
@@ -115,7 +114,7 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_PLAYER_NAME);
              PreparedStatement settingsStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_OR_CREATE_SETTINGS)) {
-            preparedStatement.setString(1, "");
+            preparedStatement.setString(1, this.parent.getName());
             preparedStatement.setString(2, this.id.toString());
             settingsStatement.setString(1, this.id.toString());
             settingsStatement.setString(2, UtilGson.GSON.toJson(this.settings));
@@ -123,7 +122,7 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
             preparedStatement.executeUpdate();
             settingsStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            EnvyGTSForge.getLogger().error("Failed to save player data for " + this.parent.getName() + " (" + this.id + ")", e);
         }
     }
 }
