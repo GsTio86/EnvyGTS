@@ -1,6 +1,7 @@
 package com.envyful.gts.forge.ui;
 
 import com.envyful.api.forge.chat.UtilChatColour;
+import com.envyful.api.forge.concurrency.UtilForgeConcurrency;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.type.UtilParse;
 import com.envyful.gts.forge.EnvyGTSForge;
@@ -29,9 +30,15 @@ public class SelectPriceUI {
             return;
         }
 
-        DialogueFactory.builder()
+        UtilForgeConcurrency.runLater(() -> DialogueFactory.builder()
                 .title(UtilChatColour.colour(EnvyGTSForge.getLocale().getSellPriceInputDialogueTitle()))
-                .description(UtilChatColour.colour(EnvyGTSForge.getLocale().getSellPriceInputDialogueText()))
+                .description(UtilChatColour.colour((!error ?
+                    EnvyGTSForge.getLocale().getSellPriceInputDialogueText() :
+                    EnvyGTSForge.getLocale().getSellPriceInputDialogueErrorText())
+                    .replace("%min_price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), attribute.getCurrentPrice()))
+                    .replace("%max_price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), EnvyGTSForge.getConfig().getMaxPrice()))
+                    .replace("%pokemon%", pokemon.getDisplayName().getString())))
+                .defaultText(String.valueOf(attribute.getCurrentPrice()))
                 .closeOnEscape()
                 .onClose(closedScreen -> {
                     if (page == -1) {
@@ -60,7 +67,7 @@ public class SelectPriceUI {
                             attribute.setCurrentPrice(inputtedValue);
                             EditDurationUI.openUI(player, page, slot, false);
                         })
-                        .build()).sendTo(player.getParent());
+                        .build()).sendTo(player.getParent()), 5);
     }
 
     public static Pokemon getPokemon(ForgeEnvyPlayer player, int page, int slot) {
