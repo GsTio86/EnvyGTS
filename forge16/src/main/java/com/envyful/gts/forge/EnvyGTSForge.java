@@ -67,6 +67,7 @@ public class EnvyGTSForge {
         PlatformProxy.setHandler(ForgePlatformHandler.getInstance());
         PlatformProxy.setPlayerManager(this.playerManager);
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
+        GuiFactory.setPlayerManager(this.playerManager);
 
         MinecraftForge.EVENT_BUS.register(this);
         instance = this;

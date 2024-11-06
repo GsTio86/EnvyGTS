@@ -12,7 +12,6 @@ import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
 import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
 import com.envyful.api.forge.platform.ForgePlatformHandler;
 import com.envyful.api.forge.player.ForgePlayerManager;
-import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.platform.PlatformProxy;
 import com.envyful.gts.api.GlobalTradeManager;
@@ -69,6 +68,7 @@ public class EnvyGTSForge {
         PlatformProxy.setHandler(ForgePlatformHandler.getInstance());
         PlatformProxy.setPlayerManager(this.playerManager);
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
+        GuiFactory.setPlayerManager(this.playerManager);
 
         MinecraftForge.EVENT_BUS.register(this);
         instance = this;

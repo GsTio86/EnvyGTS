@@ -245,16 +245,17 @@ public class ItemTrade extends ForgeTrade {
     public void save() {
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.ADD_TRADE)) {
-            preparedStatement.setString(1, this.owner.toString());
-            preparedStatement.setString(2, this.ownerName);
-            preparedStatement.setString(3, this.originalOwnerName);
-            preparedStatement.setLong(4, this.expiry);
-            preparedStatement.setDouble(5, this.cost);
-            preparedStatement.setInt(6, this.removed ? 1 : 0);
-            preparedStatement.setString(7, "INSTANT_BUY");
-            preparedStatement.setString(8, "i");
-            preparedStatement.setString(9, this.getItemJson());
-            preparedStatement.setInt(10, 0);
+            preparedStatement.setString(1, this.tradeId);
+            preparedStatement.setString(2, this.owner.toString());
+            preparedStatement.setString(3, this.ownerName);
+            preparedStatement.setString(4, this.originalOwnerName);
+            preparedStatement.setLong(5, this.expiry);
+            preparedStatement.setDouble(6, this.cost);
+            preparedStatement.setInt(7, this.removed ? 1 : 0);
+            preparedStatement.setString(8, "INSTANT_BUY");
+            preparedStatement.setString(9, "i");
+            preparedStatement.setString(10, this.getItemJson());
+            preparedStatement.setInt(11, 0);
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {

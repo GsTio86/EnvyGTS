@@ -234,13 +234,9 @@ public class PokemonTrade extends ForgeTrade {
     public void delete() {
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.REMOVE_TRADE)) {
-            preparedStatement.setString(1, this.owner.toString());
-            preparedStatement.setLong(2, this.expiry);
-            preparedStatement.setDouble(3, this.cost);
-            preparedStatement.setString(4, "p");
-            preparedStatement.setString(5, "INSTANT_BUY");
-
+            preparedStatement.setString(1, this.tradeId.toString());
             preparedStatement.executeUpdate();
+            notifyTradeStatus("REMOVED");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -250,16 +246,17 @@ public class PokemonTrade extends ForgeTrade {
     public void save() {
         try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.ADD_TRADE)) {
-            preparedStatement.setString(1, this.owner.toString());
-            preparedStatement.setString(2, this.ownerName);
-            preparedStatement.setString(3, this.originalOwnerName);
-            preparedStatement.setLong(4, this.expiry);
-            preparedStatement.setDouble(5, this.cost);
-            preparedStatement.setInt(6, this.removed ? 1 : 0);
-            preparedStatement.setString(7, "INSTANT_BUY");
-            preparedStatement.setString(8, "p");
-            preparedStatement.setString(9, this.getPokemonJson());
-            preparedStatement.setInt(10, 0);
+            preparedStatement.setString(1, this.tradeId);
+            preparedStatement.setString(2, this.owner.toString());
+            preparedStatement.setString(3, this.ownerName);
+            preparedStatement.setString(4, this.originalOwnerName);
+            preparedStatement.setLong(5, this.expiry);
+            preparedStatement.setDouble(6, this.cost);
+            preparedStatement.setInt(7, this.removed ? 1 : 0);
+            preparedStatement.setString(8, "INSTANT_BUY");
+            preparedStatement.setString(9, "p");
+            preparedStatement.setString(10, this.getPokemonJson());
+            preparedStatement.setInt(11, 0);
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
