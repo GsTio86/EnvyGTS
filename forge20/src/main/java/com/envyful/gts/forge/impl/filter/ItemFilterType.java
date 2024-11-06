@@ -4,7 +4,6 @@ import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.Trade;
 import com.envyful.gts.api.gui.FilterType;
-import com.envyful.gts.api.gui.FilterTypeFactory;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.impl.trade.type.ItemTrade;
 

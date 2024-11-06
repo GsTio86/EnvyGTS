@@ -42,6 +42,7 @@ out/
 *.iml
 *.ipr
 *.iws
+/release
 
 ##############################
 ## Eclipse

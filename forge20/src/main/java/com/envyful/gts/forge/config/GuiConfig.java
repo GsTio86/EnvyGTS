@@ -9,9 +9,7 @@ import com.envyful.api.config.yaml.AbstractYamlConfig;
 import com.envyful.api.forge.gui.type.ConfirmationUI;
 import com.envyful.api.reforged.pixelmon.config.SpriteConfig;
 import com.envyful.api.type.Pair;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.List;

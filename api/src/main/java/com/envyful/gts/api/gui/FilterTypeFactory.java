@@ -1,9 +1,5 @@
 package com.envyful.gts.api.gui;
 
-import com.envyful.gts.api.gui.impl.AllFilterType;
-import com.envyful.gts.api.gui.impl.InstantBuyFilterType;
-import com.envyful.gts.api.gui.impl.OwnFilterType;
-
 import java.util.ArrayList;
 import java.util.List;
 

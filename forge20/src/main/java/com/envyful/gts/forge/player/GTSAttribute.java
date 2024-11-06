@@ -3,7 +3,6 @@ package com.envyful.gts.forge.player;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.concurrency.UtilForgeConcurrency;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.forge.player.ForgePlayerManager;
 import com.envyful.api.forge.player.attribute.ManagedForgeAttribute;
 import com.envyful.api.json.UtilGson;
 import com.envyful.gts.api.Trade;
@@ -112,7 +111,7 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
 
             this.settings = UtilGson.GSON.fromJson(settingsSet.getString("settings"), PlayerSettings.class);
         } catch (SQLException e) {
-            EnvyGTSForge.getLogger().error("Failed to load player data for " + this.parent.getName() + " (" + this.id + ")", e);
+            EnvyGTSForge.getLogger().error("Failed to load player data for {} ({})", this.parent.getName(), this.id, e);
         }
     }
 
@@ -129,7 +128,7 @@ public class GTSAttribute extends ManagedForgeAttribute<EnvyGTSForge> {
             preparedStatement.executeUpdate();
             settingsStatement.executeUpdate();
         } catch (SQLException e) {
-            EnvyGTSForge.getLogger().error("Failed to save player data for " + this.parent.getName() + " (" + this.id + ")", e);
+            EnvyGTSForge.getLogger().error("Failed to save player data for {} ({})", this.parent.getName(), this.id, e);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.envyful.gts.api.gui;
 
-import com.envyful.api.config.type.ConfigItem;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.Trade;

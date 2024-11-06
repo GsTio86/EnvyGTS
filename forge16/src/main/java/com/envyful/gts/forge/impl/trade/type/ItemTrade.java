@@ -19,7 +19,6 @@ import com.envyful.gts.api.TradeData;
 import com.envyful.gts.api.discord.DiscordEvent;
 import com.envyful.gts.api.gui.SortType;
 import com.envyful.gts.api.sql.EnvyGTSQueries;
-import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.config.EnvyGTSConfig;
 import com.envyful.gts.forge.event.TradeCollectEvent;

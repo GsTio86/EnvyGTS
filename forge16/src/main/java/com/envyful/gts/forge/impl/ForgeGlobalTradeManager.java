@@ -4,7 +4,6 @@ import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.GlobalTradeManager;
 import com.envyful.gts.api.Trade;
-import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.event.TradeCreateEvent;
 import com.envyful.gts.forge.player.GTSAttribute;
 import com.google.common.collect.Lists;
