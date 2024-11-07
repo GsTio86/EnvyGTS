@@ -50,7 +50,10 @@ public class SelectPriceUI {
                 .buttons(DialogueButton.builder()
                         .text("Submit")
                         .backgroundColor(Color.GRAY)
-                        .acceptedInputs(InputPattern.of(Pattern.compile("[0-9]+"), UtilChatColour.colour(EnvyGTSForge.getLocale().getSellPriceInputDialogueErrorText())))
+                        .acceptedInputs(InputPattern.of("[0-9]+(\\.[0-9]+)?", UtilChatColour.colour(EnvyGTSForge.getLocale().getSellPriceInputDialogueErrorText()
+                            .replace("%min_price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), attribute.getCurrentPrice()))
+                            .replace("%max_price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), EnvyGTSForge.getConfig().getMaxPrice()))
+                            .replace("%pokemon%", pokemon.getDisplayName().getString()))))
                         .onClick(submitted -> {
                             var inputtedValue = UtilParse.parseDouble(submitted.getInput()).orElse(-1.0);
 
