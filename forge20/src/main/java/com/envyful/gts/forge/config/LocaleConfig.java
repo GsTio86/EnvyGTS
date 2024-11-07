@@ -4,6 +4,7 @@ import com.envyful.api.config.data.ConfigPath;
 import com.envyful.api.config.yaml.AbstractYamlConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.pixelmonmod.api.parsing.ParseAttempt;
 import com.pixelmonmod.api.pokemon.PokemonSpecification;
 import com.pixelmonmod.api.pokemon.PokemonSpecificationProxy;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
@@ -289,7 +290,10 @@ public class LocaleConfig extends AbstractYamlConfig {
 
         public PokemonSpecification getSpec() {
             if (this.cachedSpec == null) {
-                this.cachedSpec = PokemonSpecificationProxy.create(this.spec).get();
+                ParseAttempt<PokemonSpecification> attempt = PokemonSpecificationProxy.create(this.spec);
+                if (attempt.wasSuccess()) {
+                    this.cachedSpec = attempt.get();
+                }
             }
 
             return this.cachedSpec;
