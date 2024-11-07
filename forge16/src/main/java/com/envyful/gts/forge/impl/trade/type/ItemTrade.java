@@ -138,7 +138,7 @@ public class ItemTrade extends ForgeTrade {
                 .singleClick()
                 .asyncClick(false)
                 .clickHandler((envyPlayer, clickType) -> {
-                    if (this.removed || this.wasPurchased() || this.hasExpired()) {
+                    if (this.wasRemoved() || this.wasPurchased() || this.hasExpired()) {
                         ((ForgeEnvyPlayer) envyPlayer).getParent().closeContainer();
                         return;
                     }
@@ -147,7 +147,7 @@ public class ItemTrade extends ForgeTrade {
                             clickType,
                             EnvyGTSForge.getConfig().getOwnerRemoveButton()
                     ) && ((ServerPlayerEntity) envyPlayer.getParent()).isCreative()) {
-                        this.removed = true;
+                        setRemoved(true);
                         this.adminRemove(envyPlayer);
                         return;
                     }
@@ -156,7 +156,7 @@ public class ItemTrade extends ForgeTrade {
                             clickType,
                             EnvyGTSForge.getConfig().getOwnerRemoveButton()
                     )) {
-                        this.removed = true;
+                        setRemoved(true);
                         MinecraftForge.EVENT_BUS.post(new TradeRemoveEvent(this));
 
                         GTSAttribute attribute = ((ForgeEnvyPlayer) envyPlayer).getAttributeNow(GTSAttribute.class);
@@ -180,7 +180,7 @@ public class ItemTrade extends ForgeTrade {
                                                      .build())
                             .confirmHandler((clicker, clickType1) ->
                                 UtilForgeConcurrency.runSync(() -> {
-                                    if (this.purchased || this.wasRemoved() || this.hasExpired()) {
+                                    if (this.wasPurchased() || this.wasRemoved() || this.hasExpired()) {
                                         ViewTradesUI.openUI((ForgeEnvyPlayer)clicker);
                                         return;
                                     }

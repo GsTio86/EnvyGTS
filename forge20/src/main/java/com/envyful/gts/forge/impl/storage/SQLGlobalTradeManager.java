@@ -56,6 +56,20 @@ public class SQLGlobalTradeManager extends ForgeGlobalTradeManager {
                 case "REMOVED":
                     this.activeTrades.removeIf(trade -> trade.getTradeId().equals(tradeId));
                     break;
+                case "UPDATE_STATUS":
+                    String status = parts[3];
+                    Trade trade = this.activeTrades.stream()
+                        .filter(t -> t.getTradeId().equals(tradeId))
+                        .findFirst().orElse(null);
+                    if (trade == null) {
+                        return;
+                    }
+                    if (status.equalsIgnoreCase("purchased")) {
+                        trade.setPurchased(true);
+                    } else if (status.equalsIgnoreCase("removed")) {
+                        trade.setRemoved(true);
+                    }
+                    break;
                 case "WAS_PURCHASED":
                     ServerPlayer target = UtilPlayer.getOnlinePlayer(UUID.fromString(parts[3]));
                     if (target == null) return;

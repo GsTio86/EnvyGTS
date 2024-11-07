@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class ForgeTrade implements Trade {
 
     private static final String TRADE_LOCK_KEY_PREFIX = "trade_lock:";
-    private static final int LOCK_EXPIRY_TIME_MS = 10000;
+    private static final int LOCK_EXPIRY_TIME_MS = 8000;
 
     private final String lockValue = UUID.randomUUID().toString();
     protected final String tradeId;
@@ -84,8 +84,22 @@ public abstract class ForgeTrade implements Trade {
     }
 
     @Override
+    public void setPurchased(boolean purchased) {
+        this.purchased = purchased;
+        attemptLock();
+        notifyTradeStatus("UPDATE_STATUS", "purchased");
+    }
+
+    @Override
     public boolean wasPurchased() {
         return this.purchased;
+    }
+
+    @Override
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
+        attemptLock();
+        notifyTradeStatus("UPDATE_STATUS", "removed");
     }
 
     @Override
@@ -154,20 +168,19 @@ public abstract class ForgeTrade implements Trade {
         }
     }
 
-    private boolean attemptLock() {
+    public boolean attemptLock() {
         Database redis = EnvyGTSForge.getRedisDatabase();
         String lockKey = TRADE_LOCK_KEY_PREFIX + this.tradeId;
 
         try {
             String result = redis.getRedis().sync().set(lockKey, lockValue, SetArgs.Builder.nx().px(LOCK_EXPIRY_TIME_MS));
             return "OK".equals(result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        } catch (Exception ignored) {
         }
+        return false;
     }
 
-    private void releaseLock() {
+    public void releaseLock() {
         Database redis = EnvyGTSForge.getRedisDatabase();
         String lockKey = TRADE_LOCK_KEY_PREFIX + this.tradeId;
 
@@ -175,8 +188,7 @@ public abstract class ForgeTrade implements Trade {
             if (lockValue.equals(redis.getRedis().sync().get(lockKey))) {
                 redis.getRedis().sync().del(lockKey);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
@@ -217,8 +229,8 @@ public abstract class ForgeTrade implements Trade {
     }
 
     protected CompletableFuture<Void> setRemoved() {
-        this.removed = true;
-
+        setRemoved(true);
+        notifyTradeStatus("UPDATE_STATUS", "removed");
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_REMOVED)) {

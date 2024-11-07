@@ -74,11 +74,27 @@ public interface Trade extends SimplePlaceholder {
 
     /**
      *
+     * Sets the item as removed
+     *
+     * @param removed If the item was removed
+     */
+    void setRemoved(boolean removed);
+
+    /**
+     *
      * If the item was removed by the owner
      *
      * @return If the item was removed
      */
     boolean wasRemoved();
+
+    /**
+     *
+     * Sets the item as purchased
+     *
+     * @param purchased If the item was purchased
+     */
+    void setPurchased(boolean purchased);
 
     /**
      *
