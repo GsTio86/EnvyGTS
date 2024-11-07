@@ -12,6 +12,7 @@ import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
 import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
 import com.envyful.api.forge.platform.ForgePlatformHandler;
 import com.envyful.api.forge.player.ForgePlayerManager;
+import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.platform.PlatformProxy;
 import com.envyful.gts.api.GlobalTradeManager;
@@ -82,6 +83,7 @@ public class EnvyGTSForge {
         FilterTypeFactory.register(new ForgeOwnFilterType());
         FilterTypeFactory.register(new ItemFilterType());
         FilterTypeFactory.register(new PokemonFilterType());
+        UtilPlayer.registerPermission("envygts.admin.edit");
 
         this.playerManager.registerAttribute(GTSAttribute.class, GTSAttribute::new);
 
