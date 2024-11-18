@@ -2,7 +2,8 @@
 
 ## Requirements
 
-**MySQL** and **Redis**
+- **MySQL** or **SQLite**
+- **Redis**
 
 ## Features
 
