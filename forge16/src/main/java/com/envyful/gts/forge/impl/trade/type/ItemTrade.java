@@ -185,10 +185,10 @@ public abstract class ItemTrade extends ForgeTrade {
 
         for (String s : lore) {
             newLore.add(UtilChatColour.colour(s
-                    .replace("%cost%",
+                    .replace("%price%",
                              String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.cost))
-                    .replace("%duration%", UtilTimeFormat.getFormattedDuration((this.expiry - System.currentTimeMillis())))
-                    .replace("%owner%", this.ownerName)
+                    .replace("%expires_in%", UtilTimeFormat.getFormattedDuration((this.expiry - System.currentTimeMillis())))
+                    .replace("%seller%", this.ownerName)
                     .replace("%buyer%", this.ownerName)
                     .replace("%original_owner%", this.originalOwnerName)));
         }
@@ -330,7 +330,7 @@ public abstract class ItemTrade extends ForgeTrade {
                 var tagCompound = JsonToNBT.parseTag(contents);
                 return this.contents(ItemStack.of(tagCompound));
             } catch (CommandSyntaxException e) {
-                EnvyGTSForge.getLogger().error("Failed to parse item contents: " + contents);
+                EnvyGTSForge.getLogger().error("Failed to parse item contents: {}", contents);
             }
             return this;
         }
@@ -352,10 +352,10 @@ public abstract class ItemTrade extends ForgeTrade {
             }
 
             if (EnvyGTSForge.getPlayerManager().getSaveManager().getSaveMode().equals(SQLiteDatabaseDetailsConfig.ID)) {
-                return new SQLItemTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLiteItemTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                                         this.itemStack, this.removed, this.purchased);
             } else {
-                return new SQLiteItemTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLItemTrade(this.tradeId,this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                         this.itemStack, this.removed, this.purchased);
             }
         }

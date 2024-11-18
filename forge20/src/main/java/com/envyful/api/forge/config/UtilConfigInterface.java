@@ -12,8 +12,8 @@ import com.envyful.api.gui.item.Displayable;
 import com.envyful.api.gui.pane.Pane;
 import com.envyful.api.math.TriConsumer;
 import com.envyful.api.text.Placeholder;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -79,13 +79,13 @@ public class UtilConfigInterface {
     public static class PaginatedBuilder<T> {
 
         private PaginatedConfigInterface configInterface;
-        private List<T> items = Lists.newArrayList();
+        private List<T> items = new ArrayList<>();
         private Function<T, ConfigItem> itemConfigItemConversion;
         private Function<T, Displayable> itemDisplayableConversion;
         private ForgePlayerManager playerManager;
         private ForgeCloseConsumer closeConsumer = (ForgeCloseConsumer) GuiFactory.closeConsumerBuilder().build();
         private TriConsumer<ForgeEnvyPlayer, Displayable.ClickType, T> pageItemClickHandler = (forgeEnvyPlayer, clickType, t) -> {};
-        private List<BiConsumer<Pane, Integer>> extraItems = Lists.newArrayList();
+        private List<BiConsumer<Pane, Integer>> extraItems = new ArrayList<>();
 
         private PaginatedBuilder() {
             // Private constructor for static factory method
@@ -155,7 +155,7 @@ public class UtilConfigInterface {
 
             UtilConfigInterface.fillBackground(pane, this.configInterface, placeholders);
 
-            int pages = (int) Math.ceil((double) this.items.size() / this.configInterface.getPositions().size());
+            int pages = this.items.size() / this.configInterface.getPositions().size();
 
             if (this.shouldShowChangePageButtons(page, pages)) {
                 UtilConfigItem.builder()

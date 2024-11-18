@@ -114,7 +114,7 @@ public abstract class PokemonTrade extends ForgeTrade {
                         return;
                     }
 
-                    if (envyPlayer.hasPermission("envygts.admin") && Objects.equals(
+                    if (envyPlayer.hasPermission("envygts.admin.edit") && Objects.equals(
                             clickType,
                             EnvyGTSForge.getConfig().getOwnerRemoveButton()
                     ) && ((ServerPlayer) envyPlayer.getParent()).isCreative()) {
@@ -296,10 +296,10 @@ public abstract class PokemonTrade extends ForgeTrade {
             }
 
             if (EnvyGTSForge.getPlayerManager().getSaveManager().getSaveMode().equals(SQLiteDatabaseDetailsConfig.ID)) {
-                return new SQLPokemonTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLitePokemonTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                         this.pokemon, this.removed, this.purchased);
             } else {
-                return new SQLitePokemonTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLPokemonTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                         this.pokemon, this.removed, this.purchased);
             }
         }

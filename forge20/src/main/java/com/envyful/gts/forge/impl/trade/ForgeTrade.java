@@ -151,7 +151,7 @@ public abstract class ForgeTrade implements Trade {
             this.attemptSendMessage(this.owner, player.getName(), (this.cost * (1 - (config.isEnableTax() ?
                 config.getTaxRate() : 1.0))));
 
-            this.purchased = true;
+            setPurchased(true);
             this.setRemoved().whenCompleteAsync((unused, throwable) -> {
                 this.collect(player, null).thenApply(unused1 -> {
                     this.updateOwnership(player, this.owner);
@@ -159,6 +159,8 @@ public abstract class ForgeTrade implements Trade {
                     MinecraftForge.EVENT_BUS.post(new PostTradePurchaseEvent((ForgeEnvyPlayer) player, this));
 
                     player.message(EnvyGTSForge.getLocale().getMessages().getPurchasedTrade());
+
+                    notifyTradeStatus("PURCHASED");
                     return null;
                 });
             }, ServerLifecycleHooks.getCurrentServer());
@@ -193,6 +195,13 @@ public abstract class ForgeTrade implements Trade {
     }
 
     private void attemptSendMessage(UUID owner, String buyerName, double taxTaken) {
+        notifyTradeStatus("WAS_PURCHASED",
+            owner.toString(),
+            buyerName,
+            this.getDisplayName(),
+            String.format("%.2f", taxTaken),
+            String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.getCost()));
+
         var target = EnvyGTSForge.getPlayerManager().getPlayer(owner);
 
         if (target == null) {

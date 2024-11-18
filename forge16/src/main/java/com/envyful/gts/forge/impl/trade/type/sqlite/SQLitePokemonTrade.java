@@ -3,7 +3,6 @@ package com.envyful.gts.forge.impl.trade.type.sqlite;
 import com.envyful.api.database.sql.SqlType;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.impl.trade.type.PokemonTrade;
-import com.envyful.gts.forge.player.SQLGTSAttributeAdapter;
 import com.envyful.gts.forge.player.SQLiteGTSAttributeAdapter;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 
@@ -12,20 +11,15 @@ import java.util.concurrent.CompletableFuture;
 
 public class SQLitePokemonTrade extends PokemonTrade {
 
-    public SQLitePokemonTrade(UUID owner, String ownerName, String originalOwnerName, double cost, long expiry, Pokemon pokemon, boolean removed, boolean purchased) {
-        super(owner, ownerName, originalOwnerName, cost, expiry, pokemon, removed, purchased);
+    public SQLitePokemonTrade(String tradeId, UUID owner, String ownerName, String originalOwnerName, double cost, long expiry, Pokemon pokemon, boolean removed, boolean purchased) {
+        super(tradeId, owner, ownerName, originalOwnerName, cost, expiry, pokemon, removed, purchased);
     }
 
     @Override
     public void delete() {
+        notifyTradeStatus("REMOVED");
         EnvyGTSForge.getDatabase().update(SQLiteGTSAttributeAdapter.REMOVE_TRADE)
-                .data(
-                        SqlType.text(this.owner.toString()),
-                        SqlType.bigInt(this.expiry),
-                        SqlType.decimal(this.cost),
-                        SqlType.text("p"),
-                        SqlType.text("INSTANT_BUY")
-                )
+                .data(SqlType.text(this.tradeId))
                 .execute();
     }
 
@@ -33,6 +27,7 @@ public class SQLitePokemonTrade extends PokemonTrade {
     public void save() {
         EnvyGTSForge.getDatabase().update(SQLiteGTSAttributeAdapter.ADD_TRADE)
                 .data(
+                        SqlType.text(this.tradeId),
                         SqlType.text(this.owner.toString()),
                         SqlType.text(this.ownerName),
                         SqlType.text(this.originalOwnerName),
@@ -49,17 +44,14 @@ public class SQLitePokemonTrade extends PokemonTrade {
 
     @Override
     protected CompletableFuture<Void> setRemoved() {
-        this.removed = true;
+        setRemoved(true);
+        notifyTradeStatus("UPDATE_STATUS", "removed");
 
         return EnvyGTSForge.getDatabase().update(SQLiteGTSAttributeAdapter.UPDATE_REMOVED)
                 .data(
                         SqlType.integer(1),
                         SqlType.integer(this.purchased ? 1 : 0),
-                        SqlType.text(this.owner.toString()),
-                        SqlType.bigInt(this.expiry),
-                        SqlType.decimal(this.cost),
-                        SqlType.text("p"),
-                        SqlType.text("INSTANT_BUY")
+                        SqlType.text(this.tradeId)
                 )
                 .executeAsync().thenRun(() -> {});
     }
@@ -67,7 +59,6 @@ public class SQLitePokemonTrade extends PokemonTrade {
 
     @Override
     protected void updateOwner(UUID newOwner, String newOwnerName) {
-        var owner = this.owner;
         this.owner = newOwner;
         this.ownerName = newOwnerName;
 
@@ -75,11 +66,7 @@ public class SQLitePokemonTrade extends PokemonTrade {
                 .data(
                         SqlType.text(newOwner.toString()),
                         SqlType.text(newOwnerName),
-                        SqlType.text(owner.toString()),
-                        SqlType.bigInt(this.expiry),
-                        SqlType.decimal(this.cost),
-                        SqlType.text("p"),
-                        SqlType.text("INSTANT_BUY")
+                        SqlType.text(this.tradeId)
                 )
                 .executeAsync();
     }

@@ -2,6 +2,7 @@ package com.envyful.gts.forge.impl.storage;
 
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.Trade;
+import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.impl.ForgeGlobalTradeManager;
 import com.envyful.gts.forge.impl.TradeFactory;
@@ -22,6 +23,9 @@ public class SQLiteGlobalTradeManager extends ForgeGlobalTradeManager {
         }
 
         trade.save();
+
+        String notificationMessage = String.format("%s:%s:%s", TradeIDUtils.SERVER_IDENTIFIER, trade.getTradeId(), "NEW");
+        EnvyGTSForge.getRedisDatabase().publish("trade_update_channel", notificationMessage);
         return true;
     }
 }

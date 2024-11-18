@@ -296,10 +296,10 @@ public abstract class PokemonTrade extends ForgeTrade {
             }
 
             if (EnvyGTSForge.getPlayerManager().getSaveManager().getSaveMode().equals(SQLiteDatabaseDetailsConfig.ID)) {
-                return new SQLPokemonTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLitePokemonTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                         this.pokemon, this.removed, this.purchased);
             } else {
-                return new SQLitePokemonTrade(this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
+                return new SQLPokemonTrade(this.tradeId, this.owner, this.ownerName, this.originalOwnerName, this.cost, this.expiry,
                         this.pokemon, this.removed, this.purchased);
             }
         }

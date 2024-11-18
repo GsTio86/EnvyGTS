@@ -12,8 +12,8 @@ import com.envyful.api.gui.item.Displayable;
 import com.envyful.api.gui.pane.Pane;
 import com.envyful.api.math.TriConsumer;
 import com.envyful.api.text.Placeholder;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -93,9 +93,8 @@ public class UtilConfigInterface {
         private TriConsumer<ForgeEnvyPlayer, Displayable.ClickType, T>
             pageItemClickHandler = (forgeEnvyPlayer, clickType, t) -> {};
 
-        private final List<T> items = Lists.newArrayList();
-        private final List<BiConsumer<Pane, Integer>> extraItems =
-            Lists.newArrayList();
+        private final List<T> items = new ArrayList<>();
+        private final List<BiConsumer<Pane, Integer>> extraItems = new ArrayList<>();
 
         private PaginatedBuilder() {
             // Private constructor for static factory method
@@ -177,7 +176,8 @@ public class UtilConfigInterface {
             UtilConfigInterface.fillBackground(
                 pane, this.configInterface, placeholders);
 
-            int pages = (int) Math.ceil((double) this.items.size() / this.configInterface.getPositions().size());
+            int items = this.items.size();
+            int pages = items / this.configInterface.getPositions().size();
 
             if (this.shouldShowChangePageButtons(page, pages)) {
                 UtilConfigItem.builder()
@@ -185,14 +185,18 @@ public class UtilConfigInterface {
                         int nextPage = this.configInterface.isLoopPages()
                             ? (page >= pages) ? 1 : page + 1 : Math.min(page + 1, pages);
                         open(player, Math.max(1, nextPage), placeholders);
-                    }).extendedConfigItem(player, pane, this.configInterface.getNextPageButton(), placeholders);
+                    }).extendedConfigItem(player, pane,
+                        this.configInterface.getNextPageButton(),
+                        placeholders);
 
                 UtilConfigItem.builder()
                     .clickHandler((envyPlayer, clickType) -> {
                         int prevPage = this.configInterface.isLoopPages()
                             ? (page <= 1) ? pages : page - 1 : Math.max(page - 1, 1);
                         open(player, Math.max(1, prevPage), placeholders);
-                    }).extendedConfigItem(player, pane, this.configInterface.getPreviousPageButton(), placeholders);
+                    }).extendedConfigItem(player, pane,
+                        this.configInterface.getPreviousPageButton(),
+                        placeholders);
             }
 
             int positions = this.configInterface.getPositions().size();

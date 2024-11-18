@@ -3,7 +3,6 @@ package com.envyful.gts.forge.listener;
 import com.envyful.api.concurrency.UtilConcurrency;
 import com.envyful.api.text.Placeholder;
 import com.envyful.gts.forge.EnvyGTSForge;
-import com.envyful.gts.forge.config.EnvyGTSConfig;
 import com.envyful.gts.forge.event.PostTradePurchaseEvent;
 import com.envyful.gts.forge.event.TradeCreateEvent;
 import com.envyful.gts.forge.event.TradeRemoveEvent;
