@@ -1,32 +1,28 @@
 package com.envyful.gts.forge.impl.trade;
 
-import com.envyful.api.concurrency.UtilConcurrency;
 import com.envyful.api.database.Database;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.player.EnvyPlayer;
+import com.envyful.api.text.Placeholder;
+import com.envyful.api.time.UtilTimeFormat;
 import com.envyful.gts.api.Trade;
 import com.envyful.gts.api.gui.FilterType;
-import com.envyful.gts.api.sql.EnvyGTSQueries;
 import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
-import com.envyful.gts.forge.config.EnvyGTSConfig;
 import com.envyful.gts.forge.event.PostTradePurchaseEvent;
 import com.envyful.gts.forge.event.TradePurchaseEvent;
 import com.envyful.gts.forge.impl.trade.type.ItemTrade;
 import com.envyful.gts.forge.impl.trade.type.PokemonTrade;
 import com.envyful.gts.forge.player.GTSAttribute;
-import com.pixelmonmod.pixelmon.api.economy.BankAccount;
+import com.google.common.collect.Lists;
 import com.pixelmonmod.pixelmon.api.economy.BankAccountProxy;
 import io.lettuce.core.SetArgs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -79,6 +75,11 @@ public abstract class ForgeTrade implements Trade {
     }
 
     @Override
+    public long getExpiry() {
+        return this.expiry;
+    }
+
+    @Override
     public boolean hasExpired() {
         return System.currentTimeMillis() >= this.expiry;
     }
@@ -124,10 +125,10 @@ public abstract class ForgeTrade implements Trade {
         }
 
         try {
-            ServerPlayer parent = (ServerPlayer) player.getParent();
-            BankAccount iPixelmonBankAccount = BankAccountProxy.getBankAccountNow(parent);
+            var parent = (ServerPlayer) player.getParent();
+            var bankAccount = BankAccountProxy.getBankAccountNow(parent);
 
-            if (iPixelmonBankAccount.getBalance().doubleValue() < this.cost) {
+            if (bankAccount.getBalance().doubleValue() < this.cost) {
                 player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getInsufficientFunds()));
                 return false;
             }
@@ -136,10 +137,10 @@ public abstract class ForgeTrade implements Trade {
                 return false;
             }
 
-            iPixelmonBankAccount.take(this.cost);
+            bankAccount.take(this.cost);
 
-            EnvyGTSConfig config = EnvyGTSForge.getConfig();
-            BankAccount target = BankAccountProxy.getBankAccountNow(this.owner);
+            var config = EnvyGTSForge.getConfig();
+            var target = BankAccountProxy.getBankAccountNow(this.owner);
 
             if (target == null) {
                 return false;
@@ -153,12 +154,11 @@ public abstract class ForgeTrade implements Trade {
             this.purchased = true;
             this.setRemoved().whenCompleteAsync((unused, throwable) -> {
                 this.collect(player, null).thenApply(unused1 -> {
-                    this.updateOwnership((EnvyPlayer<ServerPlayer>) player, this.owner);
+                    this.updateOwnership(player, this.owner);
+
                     MinecraftForge.EVENT_BUS.post(new PostTradePurchaseEvent((ForgeEnvyPlayer) player, this));
 
-                    player.message(UtilChatColour.colour(EnvyGTSForge.getLocale().getMessages().getPurchasedTrade()));
-
-                    notifyTradeStatus("PURCHASED");
+                    player.message(EnvyGTSForge.getLocale().getMessages().getPurchasedTrade());
                     return null;
                 });
             }, ServerLifecycleHooks.getCurrentServer());
@@ -193,28 +193,20 @@ public abstract class ForgeTrade implements Trade {
     }
 
     private void attemptSendMessage(UUID owner, String buyerName, double taxTaken) {
-        notifyTradeStatus("WAS_PURCHASED",
-            owner.toString(),
-            buyerName,
-            this.getDisplayName(),
-            String.format("%.2f", taxTaken),
-            String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.getCost()));
-        ServerPlayer target = UtilPlayer.getOnlinePlayer(owner);
+        var target = EnvyGTSForge.getPlayerManager().getPlayer(owner);
 
         if (target == null) {
             return;
         }
 
-        target.sendSystemMessage(UtilChatColour.colour(
-                EnvyGTSForge.getLocale().getMessages().getItemWasPurchased()
+        target.message(EnvyGTSForge.getLocale().getMessages().getItemWasPurchased()
                 .replace("%item%", this.getDisplayName())
                 .replace("%buyer%", buyerName)
                 .replace("%tax%", String.format("%.2f", taxTaken))
-                .replace("%price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.getCost()))
-        ));
+                .replace("%price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.getCost())));
     }
 
-    private void updateOwnership(EnvyPlayer<ServerPlayer> purchaser, UUID oldOwner) {
+    private void updateOwnership(EnvyPlayer<?> purchaser, UUID oldOwner) {
         this.owner = purchaser.getUniqueId();
         this.ownerName = purchaser.getName();
 
@@ -224,44 +216,23 @@ public abstract class ForgeTrade implements Trade {
             return;
         }
 
-        GTSAttribute sellerAttribute = seller.getAttributeNow(GTSAttribute.class);
+        var sellerAttribute = seller.getAttributeNow(GTSAttribute.class);
         sellerAttribute.getOwnedTrades().remove(this);
     }
 
-    protected CompletableFuture<Void> setRemoved() {
-        setRemoved(true);
-        notifyTradeStatus("UPDATE_STATUS", "removed");
-        return CompletableFuture.runAsync(() -> {
-            try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_REMOVED)) {
-                preparedStatement.setInt(1, 1);
-                preparedStatement.setInt(2, this.purchased ? 1 : 0);
-                preparedStatement.setString(3, this.tradeId);
+    protected abstract CompletableFuture<Void> setRemoved();
 
-                preparedStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }, UtilConcurrency.SCHEDULED_EXECUTOR_SERVICE);
-    }
+    protected abstract void updateOwner(UUID newOwner, String newOwnerName);
 
-    protected void updateOwner(UUID newOwner, String newOwnerName) {
-        UUID owner = this.owner;
-        this.owner = newOwner;
-        this.ownerName = newOwnerName;
-
-        UtilConcurrency.runAsync(() -> {
-            try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.UPDATE_OWNER)) {
-                preparedStatement.setString(1, newOwner.toString());
-                preparedStatement.setString(2, newOwnerName);
-                preparedStatement.setString(3, tradeId);
-
-                preparedStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+    @Override
+    public List<Placeholder> placeholders() {
+        return Lists.newArrayList(
+                Placeholder.simple("%seller%", this.originalOwnerName),
+                Placeholder.simple("%buyer%", this.ownerName),
+                Placeholder.simple("%price%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), this.cost)),
+                Placeholder.simple("%expires_in%", UtilTimeFormat.getFormattedDuration(this.expiry - System.currentTimeMillis())),
+                Placeholder.simple("%date%", String.valueOf(System.currentTimeMillis()))
+        );
     }
 
     public void notifyTradeStatus(String status, String... args) {

@@ -1,14 +1,14 @@
 package com.envyful.gts.api;
 
-import com.envyful.api.discord.DiscordWebHook;
 import com.envyful.api.gui.item.Displayable;
 import com.envyful.api.gui.pane.Pane;
 import com.envyful.api.player.EnvyPlayer;
-import com.envyful.api.text.parse.SimplePlaceholder;
-import com.envyful.gts.api.discord.DiscordEvent;
+import com.envyful.api.text.ParseResult;
+import com.envyful.api.text.Placeholder;
 import com.envyful.gts.api.gui.FilterType;
-import com.envyful.gts.api.gui.SortType;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  * This interface represents an item that exists on GTS.
  *
  */
-public interface Trade extends SimplePlaceholder {
+public interface Trade extends Placeholder {
 
     /**
      *
@@ -71,6 +71,14 @@ public interface Trade extends SimplePlaceholder {
      * @return If the item expired
      */
     boolean hasExpired();
+
+    /**
+     *
+     * Gets the timestamp at which this trade will expire
+     *
+     * @return The expiry timestamp
+     */
+    long getExpiry();
 
     /**
      *
@@ -134,16 +142,6 @@ public interface Trade extends SimplePlaceholder {
 
     /**
      *
-     * Used for sorting the GTS GUI
-     *
-     * @param other The other trade to compare to
-     * @param type The type of sorting happening
-     * @return positive if should be placed first; 0 - if equal; negative if should be placed after
-     */
-    int compare(Trade other, SortType type);
-
-    /**
-     *
      * Used for filtering the GTS GUI for specific types
      * Returns true if it matches the filter type
      *
@@ -184,27 +182,28 @@ public interface Trade extends SimplePlaceholder {
 
     /**
      *
-     * Converts to TradeData
-     *
-     * @return The TradeData representation
-     */
-    TradeData toData();
-
-    /**
-     *
-     * Gets the webhook for this event
-     *
-     * @return The webhook for this event
-     */
-    DiscordWebHook getWebHook(DiscordEvent event);
-
-    /**
-     *
      * Check if the given object matches the traded object
      *
      * @param o The object being checked
      * @return True if matching
      */
     boolean matches(Object o);
+
+    @Override
+    default @NonNull ParseResult replace(@NonNull ParseResult parseResult) {
+        for (Placeholder placeholder : this.placeholders()) {
+            parseResult = placeholder.replace(parseResult);
+        }
+
+        return parseResult;
+    }
+
+    /**
+     *
+     * Gets the placeholders for this trade
+     *
+     * @return The placeholders
+     */
+    List<Placeholder> placeholders();
 
 }

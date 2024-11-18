@@ -5,11 +5,11 @@ import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.Trade;
-import com.envyful.gts.api.sql.EnvyGTSQueries;
 import com.envyful.gts.api.utils.TradeIDUtils;
 import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.impl.ForgeGlobalTradeManager;
 import com.envyful.gts.forge.impl.TradeFactory;
+import com.envyful.gts.forge.player.SQLGTSAttributeAdapter;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.sql.Connection;
@@ -21,17 +21,9 @@ import java.util.UUID;
 public class SQLGlobalTradeManager extends ForgeGlobalTradeManager {
 
     public SQLGlobalTradeManager() {
-        EnvyGTSForge.getRedisDatabase().subscribe(this);
-        try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.GET_ALL_TRADES)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                this.activeTrades.add(TradeFactory.fromResultSet(resultSet));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        EnvyGTSForge.getDatabase().query(SQLGTSAttributeAdapter.GET_ALL_TRADES)
+                .converter(resultSet -> this.activeTrades.add(TradeFactory.fromResultSet(resultSet)))
+                .executeWithConverter();
     }
 
     @Subscribe("trade_update_channel")
@@ -83,7 +75,7 @@ public class SQLGlobalTradeManager extends ForgeGlobalTradeManager {
                     break;
                 case "NEW":
                     try (Connection connection = EnvyGTSForge.getDatabase().getConnection();
-                         PreparedStatement preparedStatement = connection.prepareStatement(EnvyGTSQueries.GET_TRADE_BY_ID)) {
+                         PreparedStatement preparedStatement = connection.prepareStatement(SQLGTSAttributeAdapter.GET_TRADE_BY_ID)) {
                         preparedStatement.setString(1, tradeId);
                         ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -111,5 +103,4 @@ public class SQLGlobalTradeManager extends ForgeGlobalTradeManager {
         EnvyGTSForge.getRedisDatabase().publish("trade_update_channel", notificationMessage);
         return true;
     }
-
 }

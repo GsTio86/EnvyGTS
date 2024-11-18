@@ -189,7 +189,9 @@ public class GuiConfig extends AbstractYamlConfig {
                 .positions(6, 5)
                 .build();
 
-        private SpriteConfig spriteConfig = new SpriteConfig();
+        private SpriteConfig spriteConfig = SpriteConfig.builder()
+                .addLore("%below_lore_data%")
+                .build();
 
         public SearchTradesConfig() {
         }
@@ -265,10 +267,10 @@ public class GuiConfig extends AbstractYamlConfig {
                         .build();
 
         private ConfigItem noPokemonItem = ConfigItem.builder()
-                        .type("minecraft:barrier")
-                        .name("&cNo pokemon in this position")
-                        .amount(1)
-                        .build();
+                .type("minecraft:barrier")
+                .name("&cNo pokemon in this position")
+                .amount(1)
+                .build();
 
         private ConfigItem untradeablePokemonItem = ConfigItem.builder()
                 .type("minecraft:barrier")

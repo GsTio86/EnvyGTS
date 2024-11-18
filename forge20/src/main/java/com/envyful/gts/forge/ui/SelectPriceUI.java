@@ -13,7 +13,6 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.api.storage.StorageProxy;
 
 import java.awt.*;
-import java.util.regex.Pattern;
 
 public class SelectPriceUI {
 

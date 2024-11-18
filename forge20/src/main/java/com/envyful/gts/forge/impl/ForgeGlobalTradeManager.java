@@ -4,6 +4,7 @@ import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.player.EnvyPlayer;
 import com.envyful.gts.api.GlobalTradeManager;
 import com.envyful.gts.api.Trade;
+import com.envyful.gts.forge.EnvyGTSForge;
 import com.envyful.gts.forge.event.TradeCreateEvent;
 import com.envyful.gts.forge.player.GTSAttribute;
 import com.google.common.collect.Lists;
@@ -51,7 +52,7 @@ public abstract class ForgeGlobalTradeManager implements GlobalTradeManager {
 
     @Override
     public List<Trade> getUserTrades(EnvyPlayer<?> player) {
-        GTSAttribute attribute = ((ForgeEnvyPlayer) player).getAttributeNow(GTSAttribute.class);
+        GTSAttribute attribute = player.getAttributeNow(GTSAttribute.class);
 
         if (attribute == null) {
             return Collections.emptyList();
@@ -62,7 +63,7 @@ public abstract class ForgeGlobalTradeManager implements GlobalTradeManager {
 
     @Override
     public List<Trade> getExpiredTrades(EnvyPlayer<?> player) {
-        GTSAttribute attribute = ((ForgeEnvyPlayer) player).getAttributeNow(GTSAttribute.class);
+        GTSAttribute attribute = player.getAttributeNow(GTSAttribute.class);
 
         if (attribute == null) {
             return Collections.emptyList();
@@ -81,7 +82,7 @@ public abstract class ForgeGlobalTradeManager implements GlobalTradeManager {
 
     @Override
     public List<Trade> getPurchasedTrades(EnvyPlayer<?> player) {
-        GTSAttribute attribute = ((ForgeEnvyPlayer) player).getAttributeNow(GTSAttribute.class);
+        GTSAttribute attribute = player.getAttributeNow(GTSAttribute.class);
 
         if (attribute == null) {
             return Collections.emptyList();

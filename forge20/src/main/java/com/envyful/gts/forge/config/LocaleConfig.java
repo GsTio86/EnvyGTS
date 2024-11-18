@@ -20,15 +20,15 @@ public class LocaleConfig extends AbstractYamlConfig {
 
     private List<String> listingBelowDataLore = Lists.newArrayList(
             "  ",
-            "&bSeller: %owner%",
-            "&bCost: &a$%cost%",
-            "&bRemaining Time: &e%duration%"
+            "&bSeller: %seller%",
+            "&bCost: &a$%price%",
+            "&bRemaining Time: &e%expires_in%"
     );
 
     private List<String> listingBelowExpiredOrClaimableLore = Lists.newArrayList(
             "  ",
             "&bSeller: %original_owner%",
-            "&bCost: &a$%cost%"
+            "&bCost: &a$%price%"
     );
 
     private String moneyFormat = "%.2f";
@@ -124,8 +124,8 @@ public class LocaleConfig extends AbstractYamlConfig {
     @ConfigSerializable
     public static class Messages {
 
-        private String cannotRideAndGts = "&c&l(!) Please stop riding whilst trying to open the GTS";
-        private String openingUi = "&e&l(!) &eOpening GTS...";
+        private List<String> cannotRideAndGts = List.of("&c&l(!) Please stop riding whilst trying to open the GTS");
+        private List<String> openingUi = List.of("&e&l(!) &eOpening GTS...");
         private String sellInsuffucientArgs = "&c&l(!) &cInsufficient args! /gts s <amount> <price> [duration]";
         private String sellNoItemInHand = "&c&l(!) &cYou must have an item in your hand to sell!";
 
@@ -155,14 +155,14 @@ public class LocaleConfig extends AbstractYamlConfig {
         private List<String> createTradeBroadcast = Lists.newArrayList(
                 " ",
                 "&a&lENVY GTS",
-                "&e%player%&7 added a new GTS listing for %name% for $%cost%",
+                "&e%seller%&7 added a new GTS listing for %name% for $%price%",
                 " "
         );
 
         private Map<String, SpecBasedBroadcast> createTradeBroadcasts = ImmutableMap.of("example", new SpecBasedBroadcast("", Lists.newArrayList(
                 " ",
                 "&a&lENVY GTS",
-                "&e%player%&7 added a new GTS listing for %name% for $%cost%",
+                "&e%seller%&7 added a new GTS listing for %name% for $%price%",
                 " "
         )));
 
@@ -192,7 +192,7 @@ public class LocaleConfig extends AbstractYamlConfig {
             return this.inventoryFull;
         }
 
-        public String getOpeningUi() {
+        public List<String> getOpeningUi() {
             return this.openingUi;
         }
 
@@ -264,12 +264,12 @@ public class LocaleConfig extends AbstractYamlConfig {
             return this.cannotGoAboveMaxTime;
         }
 
-        public String getTradeAlreadyPurchased() {
-            return this.tradeAlreadyPurchased;
+        public List<String> getCannotRideAndGts() {
+            return this.cannotRideAndGts;
         }
 
-        public String getCannotRideAndGts() {
-            return this.cannotRideAndGts;
+        public String getTradeAlreadyPurchased() {
+            return this.tradeAlreadyPurchased;
         }
     }
 
