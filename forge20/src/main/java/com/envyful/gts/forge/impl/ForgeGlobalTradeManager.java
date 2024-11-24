@@ -1,6 +1,5 @@
 package com.envyful.gts.forge.impl;
 
-import com.envyful.api.database.impl.redis.Subscribe;
 import com.envyful.api.database.sql.SqlType;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
@@ -29,10 +28,8 @@ public abstract class ForgeGlobalTradeManager implements GlobalTradeManager {
     protected final List<Trade> activeTrades = Collections.synchronizedList(new ArrayList<>());
 
     public ForgeGlobalTradeManager() {
-        EnvyGTSForge.getRedisDatabase().subscribe(this);
     }
 
-    @Subscribe("trade_update_channel")
     @Override
     public void syncTrade(String channel, String message) {
         String[] parts = message.split(":");
