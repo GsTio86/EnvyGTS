@@ -30,7 +30,11 @@ public class TradeCreateListener extends LazyListener {
             return;
         }
 
-        PlatformProxy.broadcastMessage(EnvyGTSForge.getLocale().getMessages().getCreateTradeBroadcast(this.getPokemon(event.getTrade())), event.getTrade());
+        PlatformProxy.broadcastMessage(EnvyGTSForge.getLocale().getMessages().getCreateTradeBroadcast(this.getPokemon(event.getTrade())),
+            Placeholder.simple("%player%", event.getPlayer().getName()),
+            Placeholder.simple("%name%", event.getTrade().getDisplayName()),
+            Placeholder.simple("%cost%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), event.getTrade().getCost()))
+        );
     }
 
     private Pokemon getPokemon(Trade trade) {
