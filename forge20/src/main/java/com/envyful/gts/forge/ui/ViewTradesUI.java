@@ -3,7 +3,7 @@ package com.envyful.gts.forge.ui;
 import com.envyful.api.forge.config.UtilConfigInterface;
 import com.envyful.api.forge.config.UtilConfigItem;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.text.parse.SimplePlaceholder;
+import com.envyful.api.text.Placeholder;
 import com.envyful.gts.api.Trade;
 import com.envyful.gts.api.gui.FilterType;
 import com.envyful.gts.api.gui.FilterTypeFactory;
@@ -42,16 +42,13 @@ public class ViewTradesUI {
                     UtilConfigItem.builder()
                             .clickHandler((envyPlayer, clickType) -> openUI(player, page, filter, sort.getNext()))
                             .extendedConfigItem(player, pane, config.getOrderButton(),
-                                    (SimplePlaceholder) name -> name
-                                            .replace("%filter%", filter.getDisplayName())
-                                            .replace("%order%", sort.getDisplayName()));
-
+                                Placeholder.simple("%filter%", filter.getDisplayName()),
+                                Placeholder.simple("%order%", sort.getDisplayName()));
                     UtilConfigItem.builder()
                             .clickHandler((envyPlayer, clickType) -> openUI(player, page, filter.getNext(), sort))
                             .extendedConfigItem(player, pane, filter.getDisplay(),
-                                    (SimplePlaceholder) name -> name
-                                            .replace("%filter%", filter.getDisplayName())
-                                            .replace("%order%", sort.getDisplayName()));
+                                Placeholder.simple("%filter%", filter.getDisplayName()),
+                                Placeholder.simple("%order%", sort.getDisplayName()));
 
                     MinecraftForge.EVENT_BUS.post(new TradesGUISetupEvent(player, pane, page, filter, sort));
                 })

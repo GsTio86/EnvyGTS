@@ -18,17 +18,28 @@ public class WebhookListener {
 
     @SubscribeEvent
     public void onTradeCreate(TradeCreateEvent event) {
-        this.onWebhookEvent("trade_create", event.getTrade(), this.getFilterPlaceholders());
+        this.onWebhookEvent("trade_create",
+            Placeholder.simple("%player%", event.getPlayer().getName()),
+            Placeholder.simple("%name%", event.getTrade().getDisplayName()),
+            Placeholder.simple("%cost%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), event.getTrade().getCost())),
+            this.getFilterPlaceholders());
     }
 
     @SubscribeEvent
     public void onTradeCreate(PostTradePurchaseEvent event) {
-        this.onWebhookEvent("trade_purchase", event.getTrade(), this.getFilterPlaceholders());
+        this.onWebhookEvent("trade_purchase",
+            Placeholder.simple("%player%", event.getPurchasee().getName()),
+            Placeholder.simple("%name%", event.getTrade().getDisplayName()),
+            Placeholder.simple("%cost%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), event.getTrade().getCost())),
+            this.getFilterPlaceholders());
     }
 
     @SubscribeEvent
     public void onTradeRemove(TradeRemoveEvent event) {
-        this.onWebhookEvent("trade_remove", event.getTrade(), this.getFilterPlaceholders());
+        this.onWebhookEvent("trade_remove",
+            Placeholder.simple("%name%", event.getTrade().getDisplayName()),
+            Placeholder.simple("%cost%", String.format(EnvyGTSForge.getLocale().getMoneyFormat(), event.getTrade().getCost())),
+            this.getFilterPlaceholders());
     }
 
     private void onWebhookEvent(String type, Placeholder... placeholders) {
