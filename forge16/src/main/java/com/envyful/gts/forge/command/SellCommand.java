@@ -89,26 +89,20 @@ public class SellCommand {
         double price = UtilParse.parseDouble(args[1]).orElse(-1.0);
 
         if (price < 1.0) {
-            sender.message(UtilChatColour.colour(
-                    EnvyGTSForge.getLocale().getMessages().getPriceMustBeMoreThanOne()
-            ));
+            sender.message(EnvyGTSForge.getLocale().getMessages().getPriceMustBeMoreThanOne());
             return;
         }
 
         if (price > EnvyGTSForge.getConfig().getMaxPrice()) {
-            sender.message(UtilChatColour.colour(
-                    EnvyGTSForge.getLocale().getMessages().getCannotGoAboveMaxPrice()
-                            .replace("%max_price%",
-                                     String.format(EnvyGTSForge.getLocale().getMoneyFormat(),
-                                             EnvyGTSForge.getConfig().getMaxPrice()))
-            ));
+            sender.message(EnvyGTSForge.getLocale().getMessages().getCannotGoAboveMaxPrice()
+                .replace("%max_price%",
+                    String.format(EnvyGTSForge.getLocale().getMoneyFormat(),
+                        EnvyGTSForge.getConfig().getMaxPrice())));
             return;
         }
 
         if (amount > inHand.getCount()) {
-            sender.message(UtilChatColour.colour(
-                    EnvyGTSForge.getLocale().getMessages().getNotEnoughItems()
-            ));
+            sender.message(EnvyGTSForge.getLocale().getMessages().getNotEnoughItems());
             return;
         }
 
@@ -117,9 +111,7 @@ public class SellCommand {
         trades.removeIf(trade -> trade.hasExpired() || trade.wasPurchased() || trade.wasRemoved());
 
         if (trades.size() >= EnvyGTSForge.getConfig().getMaxListingsPerUser()) {
-            sender.message(UtilChatColour.colour(
-                    EnvyGTSForge.getLocale().getMessages().getMaxTradesAlreadyReached()
-            ));
+            sender.message(EnvyGTSForge.getLocale().getMessages().getMaxTradesAlreadyReached());
             return;
         }
 
@@ -129,19 +121,16 @@ public class SellCommand {
             duration = UtilTime.attemptParseTime(args[2]).orElse(-1L);
 
             if (duration < TimeUnit.SECONDS.toMillis(EnvyGTSForge.getConfig().getMinTradeDuration()) || duration < 0) {
-                sender.message(UtilChatColour.colour(
+                sender.message(
                         EnvyGTSForge.getLocale().getMessages().getCannotGoBelowMinTime()
-                                .replace("%min_duration%", String.valueOf(EnvyGTSForge.getConfig().getMinTradeDuration()))
-                ));
+                            .replace("%min_duration%", String.valueOf(EnvyGTSForge.getConfig().getMinTradeDuration())));
                 return;
             }
 
             if (duration > TimeUnit.SECONDS.toMillis(EnvyGTSForge.getConfig().getMaxTradeDurationSeconds())) {
-                sender.message(UtilChatColour.colour(
-                        EnvyGTSForge.getLocale().getMessages().getCannotGoAboveMaxTime()
-                                .replace("%max_duration%",
-                                        UtilTimeFormat.getFormattedDuration(EnvyGTSForge.getConfig().getMaxTradeDurationSeconds()))
-                ));
+                sender.message(EnvyGTSForge.getLocale().getMessages().getCannotGoAboveMaxTime()
+                    .replace("%max_duration%",
+                        UtilTimeFormat.getFormattedDuration(EnvyGTSForge.getConfig().getMaxTradeDurationSeconds())));
                 return;
             }
         }

@@ -7,6 +7,7 @@ import com.envyful.gts.api.player.PlayerSettings;
 import com.envyful.gts.forge.EnvyGTSForge;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class SQLGTSAttributeAdapter implements AttributeAdapter<GTSAttribute, UUID> {
 
@@ -71,16 +72,16 @@ public class SQLGTSAttributeAdapter implements AttributeAdapter<GTSAttribute, UU
             "VALUES (?, ?) ON DUPLICATE KEY UPDATE settings = VALUES(`settings`);";
 
     @Override
-    public void save(GTSAttribute attribute) {
-        EnvyGTSForge.getDatabase()
+    public CompletableFuture<Void> save(GTSAttribute attribute) {
+        return CompletableFuture.allOf(EnvyGTSForge.getDatabase()
                 .update(UPDATE_PLAYER_NAME)
                 .data(SqlType.text(attribute.name), SqlType.text(attribute.getId().toString()))
-                .execute();
+                .executeAsync(),
 
         EnvyGTSForge.getDatabase()
                 .update(UPDATE_OR_CREATE_SETTINGS)
                 .data(SqlType.text(attribute.getId().toString()), SqlType.text(UtilGson.GSON.toJson(attribute.settings)))
-                .execute();
+                .executeAsync());
     }
 
     @Override
@@ -102,13 +103,13 @@ public class SQLGTSAttributeAdapter implements AttributeAdapter<GTSAttribute, UU
     }
 
     @Override
-    public void delete(GTSAttribute gtsAttribute) {
-        //TODO:
+    public CompletableFuture<Void> delete(GTSAttribute gtsAttribute) {
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public void deleteAll() {
-        //TODO:
+    public CompletableFuture<Void> deleteAll() {
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.envyful.api.config.database.DatabaseDetailsRegistry;
 import com.envyful.api.config.type.SQLDatabaseDetails;
 import com.envyful.api.config.yaml.YamlConfigFactory;
 import com.envyful.api.database.Database;
+import com.envyful.api.forge.chat.ComponentTextFormatter;
 import com.envyful.api.forge.command.ForgeCommandFactory;
 import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
 import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
@@ -16,6 +17,7 @@ import com.envyful.api.forge.player.util.UtilPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.platform.PlatformProxy;
 import com.envyful.api.player.Attribute;
+import com.envyful.api.sqlite.config.H2DatabaseDetailsConfig;
 import com.envyful.api.sqlite.config.SQLiteDatabaseDetailsConfig;
 import com.envyful.gts.api.GlobalTradeManager;
 import com.envyful.gts.api.TradeManager;
@@ -64,12 +66,14 @@ public class EnvyGTSForge {
 
     public EnvyGTSForge() {
         SQLiteDatabaseDetailsConfig.register();
+        H2DatabaseDetailsConfig.register();
         UtilLogger.setLogger(LOGGER);
 
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
         GuiFactory.setPlayerManager(this.playerManager);
         PlatformProxy.setHandler(ForgePlatformHandler.getInstance());
         PlatformProxy.setPlayerManager(this.playerManager);
+        PlatformProxy.setTextFormatter(ComponentTextFormatter.getInstance());
 
         MinecraftForge.EVENT_BUS.register(this);
         instance = this;
@@ -105,7 +109,14 @@ public class EnvyGTSForge {
         MinecraftForge.EVENT_BUS.register(new WebhookListener());
 
         UtilConcurrency.runAsync(() -> {
-            this.tradeManager = this.playerManager.getSaveManager().getSaveMode().equalsIgnoreCase(SQLiteDatabaseDetailsConfig.ID) ? new SQLiteGlobalTradeManager() : new SQLGlobalTradeManager();
+            switch (this.playerManager.getSaveManager().getSaveMode()) {
+                case SQLiteDatabaseDetailsConfig.ID:
+                    this.tradeManager = new SQLiteGlobalTradeManager();
+                    break;
+                case SQLDatabaseDetails.ID:
+                    this.tradeManager = new SQLGlobalTradeManager();
+                    break;
+            }
             TradeManager.setPlatformTradeManager(this.tradeManager);
         });
     }
