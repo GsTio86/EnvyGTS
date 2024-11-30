@@ -27,7 +27,6 @@ dependencies {
 
     shadow group: 'com.envyful.api', name: 'commons', version: '7.2.0'
     shadow group: 'com.envyful.api', name: 'sqlite', version: '7.2.0'
-    shadow group: 'com.envyful.api', name: 'h2', version: '7.2.0'
     shadow (group: 'com.envyful.api', name: 'forge20', version: '7.2.0') {
         transitive = false;
     }
@@ -50,6 +49,7 @@ shadowJar {
     relocate('com.zaxxer', 'com.envyful.gts.forge.shade.hikari')
     relocate('org.slf4j', 'com.envyful.gts.forge.shade.slf4j')
     relocate('com.envyful.api', 'com.envyful.gts.forge.shade.envy.api')
+    relocate('uk.co.envyware.helios', 'com.envyful.gts.forge.shade.envy.helios')
     relocate('org.bstats', 'com.envyful.gts.forge.shade.bstats')
     relocate('io.netty', 'com.envyful.gts.forge.shade.netty')
     relocate('io.lettuce', 'com.envyful.gts.forge.shade.lettuce')
@@ -60,10 +60,8 @@ shadowJar {
     relocate('reactor', 'com.envyful.gts.forge.shade.reactor')
     relocate('com.mysql', 'com.envyful.gts.forge.shade.mysql')
     relocate('org.sqlite', 'com.envyful.gts.forge.shade.sqlite')
-    relocate('uk.co.envyware', 'com.envyful.gts.forge.shade.envyware')
 
     exclude 'org/apache/logging/**'
-    exclude "com/google/**"
     exclude "javax/**"
     exclude "**/module-info.class"
     exclude "**/*.xml"
