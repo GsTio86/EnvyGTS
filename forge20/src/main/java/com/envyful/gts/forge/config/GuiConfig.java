@@ -24,6 +24,10 @@ public class GuiConfig extends AbstractYamlConfig {
     private SellHandOrParty sellHandOrParty = new SellHandOrParty();
     private Returns returnsGui = new Returns();
 
+    private SpriteConfig spriteConfig = SpriteConfig.builder()
+            .addLore("%below_lore_data%")
+            .build();
+
     public GuiConfig() {
         super();
     }
@@ -46,6 +50,10 @@ public class GuiConfig extends AbstractYamlConfig {
 
     public Returns getReturnsGui() {
         return this.returnsGui;
+    }
+
+    public SpriteConfig getSpriteConfig() {
+        return this.spriteConfig;
     }
 
     @ConfigSerializable
@@ -189,19 +197,11 @@ public class GuiConfig extends AbstractYamlConfig {
                 .positions(6, 5)
                 .build();
 
-        private SpriteConfig spriteConfig = SpriteConfig.builder()
-                .addLore("%below_lore_data%")
-                .build();
-
         public SearchTradesConfig() {
         }
 
         public ConfirmationUI.ConfirmConfig getConfirmGuiConfig() {
             return this.confirmGuiConfig;
-        }
-
-        public SpriteConfig getSpriteConfig() {
-            return this.spriteConfig;
         }
 
         public PaginatedConfigInterface getGuiSettings() {
@@ -278,13 +278,7 @@ public class GuiConfig extends AbstractYamlConfig {
                 .amount(1)
                 .build();
 
-        private SpriteConfig spriteConfig = new SpriteConfig();
-
         public PartyPokemonConfig() {
-        }
-
-        public SpriteConfig getSpriteConfig() {
-            return this.spriteConfig;
         }
 
         public ConfigItem getUntradeablePokemonItem() {
@@ -365,17 +359,11 @@ public class GuiConfig extends AbstractYamlConfig {
                 .amount(1)
                 .build();
 
-        private SpriteConfig spriteConfig = new SpriteConfig();
-
         private int perPage = 30;
 
         private int confirmSlot = 25;
 
         public SelectFromPCConfig() {}
-
-        public SpriteConfig getSpriteConfig() {
-            return this.spriteConfig;
-        }
 
         public ConfigItem getUntradeablePokemonItem() {
             return this.untradeablePokemonItem;
